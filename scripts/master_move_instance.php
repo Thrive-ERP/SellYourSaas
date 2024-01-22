@@ -287,8 +287,10 @@ if ($db2->error)
 }*/
 
 $productref = '';
+$forceproductref = '';
 if (isset($argv[4])) {
 	$productref = $argv[4];
+	$forceproductref = $argv[4];
 }
 if (empty($productref)) {
 	// Get tmppackage
@@ -381,10 +383,10 @@ if ($mode == 'confirmredirect' || $mode == 'confirmmaintenance') {
 
 
 // Share certificate of old instance by copying them into the common crt dir (they should already be into this directory)
-// TODO If the certificate of the source instance are not into crt directory, we must copy them into the crt directory with read permission to admin user.
+// TODO If the certificate of the source instance are not into crt directory, we must copy them into the sellyoursaas master crt directory with read permission to admin user.
 $CERTIFFORCUSTOMDOMAIN = $oldinstance;
 if ($CERTIFFORCUSTOMDOMAIN) {
-	print '--- Check/copy the certificate files (.key, .crt and -intermediate.crt) of instance (generic and custom) into the crt directory (to reuse them on the new instance for backward compatibility).'."\n";
+	print '--- Check/copy the certificate files (.key, .crt and -intermediate.crt) of instance (generic and custom) into the sellyoursaas master crt directory (to reuse them on the new instance for backward compatibility).'."\n";
 	foreach (array('', '-custom') as $ext) {
 		foreach (array('.key', '.crt', '-intermediate.crt') as $ext2) {
 			$srcfile = '/etc/apache2/with.sellyoursaas.com'.$ext.$ext2;
@@ -462,7 +464,7 @@ if ($CERTIFFORCUSTOMDOMAIN) {
 }
 
 
-print '--- Check/copy the certificate files (.key, .crt and -intermediate.crt) for websites into the crt directory (to reuse them on the new instance for backward compatibility).'."\n";
+print '--- Check/copy the certificate files (.key, .crt and -intermediate.crt) for websites into the sellyoursaas master crt directory (to reuse them on the new instance for backward compatibility).'."\n";
 // TODO
 
 
@@ -575,7 +577,7 @@ if ($mode == 'confirm' || $mode == 'confirmredirect' || $mode == 'confirmmainten
 	}
 }
 
-if (empty($productref)) {
+if (empty($forceproductref)) {
 	print "Update price, discount and qty of the new contract lines to match the one on the source.\n";
 
 	foreach ($oldpricesperproduct as $productid => $pricesperproduct) {
@@ -591,7 +593,8 @@ if (empty($productref)) {
 
 			$contractline->qty = $pricesperproduct['qty'];
 			$contractline->remise_percent = $pricesperproduct['discount'];
-			$contractline->price_ht = $pricesperproduct['price_ht'];
+			$contractline->subprice = $pricesperproduct['price_ht'];
+			$contractline->price_ht = $pricesperproduct['price_ht'];	// deprecated
 
 			print "We update line ".$objselect->rowid." with price_ht = ".$pricesperproduct['price_ht']." discount = ".$pricesperproduct['discount']."\n";
 			if ($mode == 'confirm' || $mode == 'confirmredirect' || $mode == 'confirmmaintenance') {
